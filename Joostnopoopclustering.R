@@ -34,7 +34,7 @@ colorCode <- c(Interface = "hotpink3", Above.Interface= "goldenrod3", Below.Inte
                Negative = "red", Positive = "blue")
 labels_colors(ward) <- colorCode[meta$description][order.dendrogram(ward)]
 
-#plor
+#plot
 plot(ward, main = "Sulfur Cave Bray-Curtis clustering results P = 0.07", 
      ylab = "Bray-Curtis distance", xlab = "SampleID")
 
