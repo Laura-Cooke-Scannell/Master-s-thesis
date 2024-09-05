@@ -1,7 +1,7 @@
 # clear all
 rm(list = ls())
 
-# set working directory to bio609 on your desktop
+# set working directory to Joost nopoop on my desktop
 setwd("/Users/Laura/Desktop/Thesis/Another redo of samples/Joost nopoop")
 #libraries
 library(devtools)
