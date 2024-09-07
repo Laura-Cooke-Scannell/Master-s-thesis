@@ -1,0 +1,153 @@
+#activating Qiime2
+(base) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ conda activate qiime2-2022.2
+
+#importing the sequenced 16S data to Qiime2 for further processing #
+
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime tools import \
+> --type MultiplexedSingleEndBarcodeInSequence \
+> --input-path 111920EFNillcus515F-full.fastq.gz \
+> --output-path multiplexed.qza
+Imported 111920EFNillcus515F-full.fastq.gz as MultiplexedSingleEndBarcodeInSequenceDirFmt to multiplexed.qza
+
+#demultiplexing the sequences so Qiime2 can read them, a minimum length of 136 was given to control for sequences that were too short to be of any use #
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime cutadapt demux-single \
+> --i-seqs multiplexed.qza \
+> --m-barcodes-file 111920EFNillcus-mapping\ -\ Sheet1.tsv \
+> --m-barcodes-column barcode-sequence \
+> --p-minimum-length 136 \
+> --o-per-sample-sequences demuxed.qza \
+> --o-untrimmed-sequences untrimmed.qza 
+Saved SampleData[SequencesWithQuality] to: demuxed.qza
+Saved MultiplexedSingleEndBarcodeInSequence to: untrimmed.qza
+
+#removing primers from the sequences if any were stuck around #
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime cutadapt trim-single \
+> --i-demultiplexed-sequences demuxed.qza \
+> --p-front GTGYCAGCMGCCGCGGTAA \
+> --p-adapter GGACTACNVGGGTWTCTAAT \
+> --o-trimmed-sequences noprimers.qza
+Saved SampleData[SequencesWithQuality] to: noprimers.qza
+
+#denoising, removing chimeras, etc from the primerless sequences #
+laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime dada2 denoise-single \
+> --i-demultiplexed-seqs noprimers.qza \
+> --p-trim-left 0 \
+> --p-trunc-len 0 \
+> --o-representative-sequences rep-seqs.qza \
+> --o-table table.qza \
+> --o-denoising-stats stats.qza
+Saved FeatureTable[Frequency] to: table.qza
+Saved FeatureData[Sequence] to: rep-seqs.qza
+Saved SampleData[DADA2Stats] to: stats.qza
+
+#tabulating the metadata for downstream use #
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime metadata tabulate \
+> --m-input-file stats.qza \
+> --o-visualization stats.qzv
+Saved Visualization to: stats.qzv
+
+#summarizing the feature table for downstream use #
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime feature-table summarize \
+> --i-table table.qza \
+> --o-visualization table.qzv \
+> --m-sample-metadata-file 111920EFNillcus-mapping\ -\ Sheet1.tsv 
+Saved Visualization to: table.qzv
+
+#tabulating representative sequences for further analysis#
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime feature-table tabulate-seqs \
+> --i-data rep-seqs.qza \
+> --o-visualization rep-seqs.qzv
+Saved Visualization to: rep-seqs.qzv
+
+#aligning the phylogenies to greate a phylogenetic tree#
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime phylogeny align-to-tree-mafft-fasttree \
+> --i-sequences rep-seqs.qza \
+> --o-alignment aligned-rep-seqs.qza \
+> --o-masked-alignment masked-aligned-rep-seqs.qza \
+> --o-tree unrooted-tree.qza \
+> --o-rooted-tree rooted-tree.qza
+Saved FeatureData[AlignedSequence] to: aligned-rep-seqs.qza
+Saved FeatureData[AlignedSequence] to: masked-aligned-rep-seqs.qza
+Saved Phylogeny[Unrooted] to: unrooted-tree.qza
+Saved Phylogeny[Rooted] to: rooted-tree.qza
+
+#Viewing the feature table to find a good sampling depth#
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime diversity core-metrics-phylogenetic \
+> --i-phylogeny rooted-tree.qza \
+> --i-table table.qza \
+> --p-sampling-depth 41 \
+> --m-metadata-file 111920EFNillcus-mapping\ -\ Sheet1.tsv \
+> --output-dir core-metrics-results
+Saved FeatureTable[Frequency] to: core-metrics-results/rarefied_table.qza
+Saved SampleData[AlphaDiversity] to: core-metrics-results/faith_pd_vector.qza
+Saved SampleData[AlphaDiversity] to: core-metrics-results/observed_features_vector.qza
+Saved SampleData[AlphaDiversity] to: core-metrics-results/shannon_vector.qza
+Saved SampleData[AlphaDiversity] to: core-metrics-results/evenness_vector.qza
+Saved DistanceMatrix to: core-metrics-results/unweighted_unifrac_distance_matrix.qza
+Saved DistanceMatrix to: core-metrics-results/weighted_unifrac_distance_matrix.qza
+Saved DistanceMatrix to: core-metrics-results/jaccard_distance_matrix.qza
+Saved DistanceMatrix to: core-metrics-results/bray_curtis_distance_matrix.qza
+Saved PCoAResults to: core-metrics-results/unweighted_unifrac_pcoa_results.qza
+Saved PCoAResults to: core-metrics-results/weighted_unifrac_pcoa_results.qza
+Saved PCoAResults to: core-metrics-results/jaccard_pcoa_results.qza
+Saved PCoAResults to: core-metrics-results/bray_curtis_pcoa_results.qza
+Saved Visualization to: core-metrics-results/unweighted_unifrac_emperor.qzv
+Saved Visualization to: core-metrics-results/weighted_unifrac_emperor.qzv
+Saved Visualization to: core-metrics-results/jaccard_emperor.qzv
+Saved Visualization to: core-metrics-results/bray_curtis_emperor.qzv
+
+#creating visualizations for the faith pd data to compare the alpha diversity differences between samples #
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime diversity alpha-group-significance \
+> --i-alpha-diversity core-metrics-results/faith_pd_vector.qza \
+> --m-metadata-file 111920EFNillcus-mapping\ -\ Sheet1.tsv \
+> --o-visualization core-metrics-results/faith-pd-group-sig.qzv
+Saved Visualization to: core-metrics-results/faith-pd-group-sig.qzv
+
+#creating visualizations for the evenness data between samples#
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime diversity alpha-group-significance \
+> --i-alpha-diversity core-metrics-results/evenness_vector.qza \
+> --m-metadata-file 111920EFNillcus-mapping\ -\ Sheet1.tsv \
+> --o-visualization core-metrics-results/evenness-group-sig.qzv
+Saved Visualization to: core-metrics-results/evenness-group-sig.qzv
+
+#creating UniFrac visualizations for comparison of beta diversity between cave regions (above, at, and below the interface #
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime diversity beta-group-significance \
+> --i-distance-matrix core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+> --m-metadata-file 111920EFNillcus-mapping\ -\ Sheet1.tsv \
+> --m-metadata-column location \
+> --o-visualization core-metrics-results/unweighted-unifrac-location-sig.qzv \
+> --p-pairwise
+Saved Visualization to: core-metrics-results/unweighted-unifrac-location-sig.qzv
+
+#creating a rarefaction curve to see if enough OTUS were captured from the sampling effort #
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime diversity alpha-rarefaction \
+> --i-table table.qza \
+> --i-phylogeny rooted-tree.qza \
+> --p-max-depth 41 \
+> --m-metadata-file 111920EFNillcus-mapping\ -\ Sheet1.tsv \
+> --o-visualization aligned-rep-seqs.qzv
+Saved Visualization to: aligned-rep-seqs.qzv
+
+#using Qiime2's native bayseian feature classifier trained on silva genetic database to classify the taxonomies of the microorganisms#
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime feature-classifier classify-sklearn \
+> --i-classifier silva-138-99-515-806-nb-classifier.qza \
+> --i-reads rep-seqs.qza \
+> --o-classification taxonomy.qza
+Saved FeatureData[Taxonomy] to: taxonomy.qza
+
+#Viewing the taxonomies of the seqquences #
+qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/+poop$ qiime metadata tabulate \
+> --m-input-file taxonomy.qza \
+> --o-visualization taxonomy.qzv
+Saved Visualization to: taxonomy.qzv
+
+#Finally, for the next set of data I analyze I want to remove all taxa that have come from animal feces, I just want to analyze the microorgansisms tha live naturally on the walls of the caves#
+
+(qiime2-2022.2) laura@Pluto:~/Desktop/Thesis/samplesredoredo/nopoop$ qiime taxa filter-table \
+> --i-table table-noprimers.qza \
+> --i-taxonomy taxonomy.qza \
+> --p-exclude Muribaculaceae,Bifidobacterium,uncultured_Termite,Dubosiella,Ileibacterium,Clostridium_sensu_stricto_1,Pasteurellaceae,Lachnospiraceae,Yersiniaceae,Mitochondria,Lachnospiraceae_UCG-006,Mucispirillum,Helicobacter,Parasutterella,Parabacteroides,gut_metagenome,Alistipes,Lachnospiraceae,Beijerinckiaceae,Ruminococcaceae,Eggerthellaceae,Ruminococcaceae,Rikenellaceae,Clostridia_UCG-014,Rikenellaceae,Turicella,Enterobacterales,gut_metagenome,Bifidobacterium,Peptostreptococcaceae,Ileibacterium \
+> --o-filtered-table nopoop.qza
+
+#Now I can do basically the same steps to create alpha and beta diversity comparisons for just the organisms that take advantage of the gas-gas redox interface. I can use Qiime2's visualizations as is or I can make them more readable with Excel or R or both.#
+
