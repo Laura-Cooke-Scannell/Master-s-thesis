@@ -12,4 +12,4 @@ The "Joostnopoopunifrac" (Sulfur Cave) and "grottaunifrac" (Grotta Del Cane) fil
 
 The "Joostnopoopclustering" (Sulfur Cave) file was another attempt to compare the beta diversity (this time the Bray-Curtis distance) through clustering comparison of the communities at, above, and below the interface. Although the code is functional this form of visualization is much less readable than PCoA and PCA plotting and so was not used in the final thesis.
 
-Finally, the "JoostnopoopANCOM" file 
+Finally, the "JoostnopoopANCOM" (Sulfur Cave) file was another attempt at visualizing the differential abundance of organisms by their location relative to the interface such as the differential abundance bar plots in the final thesis, but with the added benefit of bias elimination through ANCOMBC, however, the n of this study was too low to properly use ANCOMBC due to the difficulties of extracting DNA from high-iron, low pH samples from rock wall.
