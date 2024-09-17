@@ -8,4 +8,4 @@ To compare the microbial communities in both caves, my thesis team and I collect
 
 The "Qiime2 rundown" document is an example of the Qiime2 techniques I used for my 16S bioinformatics pipeline, which took raw sequencing data and converted it to .qza files that can be imported into R through the Qiime2r package (https://github.com/jbisanz/qiime2R) and then interpreted through familiar R packages such as Bioconductor, vegan, etc. Furthermore, the Qiime2 rundown also shows the use of Qiime2's own plugins, which can also be used to generate figures within Qimme2 itself such as the "alpha-group-significance" command.
 
-The 
+The "Joostpoopunifrac" and "grottaunifrac" files are examples of the use of Qiime2 data in R to produce unifrac 
